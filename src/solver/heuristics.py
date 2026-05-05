@@ -1,10 +1,13 @@
-def find_empty_location(grid):
+from .validation import is_valid
+
+def find_empty_location(grid, GRID_SIZE=None):
     """
     Finds the empty cell with the minimum number of remaining possible values (MRV heuristic).
     In case of a tie, uses the Degree heuristic to select the cell with the highest degree.
     Returns (row, column) of the cell with MRV/Degree, or None if there are no empty cells.
     """
-    GRID_SIZE = 16
+    if GRID_SIZE is None:
+        GRID_SIZE = len(grid)
     min_remaining_values = GRID_SIZE + 1 # Max possible values for a cell is GRID_SIZE
     best_cell = None
     max_degree = -1 # Used for tie-breaking
@@ -28,13 +31,16 @@ def find_empty_location(grid):
                         max_degree = current_degree
     return best_cell
 
-def calculate_degree(grid, row, col):
+def calculate_degree(grid, row, col, GRID_SIZE=None, BLOCK_SIZE=None):
     """
     Calculates the 'degree' of an empty cell, which is the number of empty cells
     in the same row, column, or 4x4 block.
     """
-    GRID_SIZE = 16
-    BLOCK_SIZE = 4
+    if GRID_SIZE is None:
+        GRID_SIZE = len(grid)
+    if BLOCK_SIZE is None:
+        import math
+        BLOCK_SIZE = int(math.isqrt(GRID_SIZE))
     degree = 0
     # Row
     for x in range(GRID_SIZE):
@@ -53,19 +59,22 @@ def calculate_degree(grid, row, col):
                 degree += 1
     return degree
 
-def get_lcv_ordered_values(grid, row, col):
+def get_lcv_ordered_values(grid, row, col, GRID_SIZE=None, BLOCK_SIZE=None):
     """
     Returns a list of numbers (1-16) ordered by the Least Constraining Value (LCV) heuristic.
     For each valid number, it calculates how many choices it leaves for other
     empty cells in the same row, column, or 4x4 block.
     Values that leave more choices are prioritized (least constraining).
     """
-    GRID_SIZE = 16
-    BLOCK_SIZE = 4
+    if GRID_SIZE is None:
+        GRID_SIZE = len(grid)
+    if BLOCK_SIZE is None:
+        import math
+        BLOCK_SIZE = int(math.isqrt(GRID_SIZE))
     potential_values_with_lcv_score = []
 
     for num_to_try in range(1, GRID_SIZE + 1): # Numbers from 1 to 16
-        if is_valid(grid, row, col, num_to_try):
+        if is_valid(grid, row, col, num_to_try, GRID_SIZE=GRID_SIZE, BLOCK_SIZE=BLOCK_SIZE):
             # Temporarily place the number
             grid[row][col] = num_to_try
             options_left_for_neighbors = 0
@@ -93,7 +102,7 @@ def get_lcv_ordered_values(grid, row, col):
                 if grid[r_neighbor][c_neighbor] == 0: # If the neighbor is empty
                     # Count valid options for this neighbor given the temporary placement
                     for val_option in range(1, GRID_SIZE + 1): # Numbers from 1 to 16
-                        if is_valid(grid, r_neighbor, c_neighbor, val_option):
+                        if is_valid(grid, r_neighbor, c_neighbor, val_option, GRID_SIZE=GRID_SIZE, BLOCK_SIZE=BLOCK_SIZE):
                             options_left_for_neighbors += 1
 
             potential_values_with_lcv_score.append((options_left_for_neighbors, num_to_try))

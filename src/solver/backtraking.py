@@ -1,26 +1,5 @@
-def is_valid(grid, row, col, num):
-    GRID_SIZE = 16
-    BLOCK_SIZE = 4
-
-    # Check row
-    for x in range(GRID_SIZE):
-        if grid[row][x] == num:
-            return False
-
-    # Check column
-    for x in range(GRID_SIZE):
-        if grid[x][col] == num:
-            return False
-
-    # Check 4x4 block
-    start_row = row - row % BLOCK_SIZE
-    start_col = col - col % BLOCK_SIZE
-    for i in range(BLOCK_SIZE):
-        for j in range(BLOCK_SIZE):
-            if grid[i + start_row][j + start_col] == num:
-                return False
-
-    return True
+from .heuristics import find_empty_location, get_lcv_ordered_values
+from .validation import is_valid
 
 def solve_sudoku(grid):
     # Find the next empty cell using MRV heuristic with Degree tie-breaking
