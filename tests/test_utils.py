@@ -1,25 +1,45 @@
 from src.utils import visualizer
 from src.utils import loaders
 
-DATA_PATH9x9 = '../data/9x9sudoku.csv'
-DATA_PATH16x16 = '../data/16x16sudoku.csv'
+# Constants for data paths[cite: 2]
+DATA_PATH9x9 = 'data/9x9sudoku.csv'
+DATA_PATH16x16 = 'data/16x16sudoku.csv'
 
-dataset9x9 = loaders.load_csv(DATA_PATH9x9)
-dataset16x16 = loaders.load_csv(DATA_PATH16x16)
 
-print ("Testing print_sudoku_grid with samples Sudoku grids:")
+def test_prepare_grid_9x9():
+    """Verify that a 9x9 Sudoku string is correctly converted to a grid."""
+    # Load dataset[cite: 2]
+    dataset = loaders.load_csv(DATA_PATH9x9)
+    sample_str = dataset['quizzes'][0]
 
-sample_sudoku_str1 = dataset16x16['Sudoku'][0]  # Get the first Sudoku grid from the 16x16 dataset
-sample_sudoku_str2 = dataset9x9['quizzes'][0]  # Get the first Sudoku grid from the 9x9 dataset
-visualizer.print_sudoku_grid(sample_sudoku_str1, GRID_SIZE=16)
-visualizer.print_sudoku_grid(sample_sudoku_str2, GRID_SIZE=9)
+    # Process string into grid[cite: 2]
+    grid = visualizer.prepare_grid_from_string(sample_str, GRID_SIZE=9)
 
-print("Testing prepare_grid_from_string with a samples Sudoku grids:")
+    # Assertions: Verify the structure
+    assert len(grid) == 9, "The 9x9 grid should have 9 rows."
+    assert all(len(row) == 9 for row in grid), "Every row in 9x9 grid must have 9 columns."
 
-sample_sudoku_grid1 = visualizer.prepare_grid_from_string(sample_sudoku_str1, GRID_SIZE=16)
-sample_sudoku_grid2 = visualizer.prepare_grid_from_string(sample_sudoku_str2, GRID_SIZE=9)
 
-print("---9x9 Sudoku Grid---")
-print(sample_sudoku_grid1)
-print("---16x16 Sudoku Grid---")
-print(sample_sudoku_grid2)
+def test_prepare_grid_16x16():
+    """Verify that a 16x16 Sudoku string is correctly converted to a grid."""
+    # Load dataset[cite: 2]
+    dataset = loaders.load_csv(DATA_PATH16x16)
+    sample_str = dataset['Sudoku'][0]
+
+    # Process string into grid[cite: 2]
+    grid = visualizer.prepare_grid_from_string(sample_str, GRID_SIZE=16)
+
+    # Assertions
+    assert len(grid) == 16, "The 16x16 grid should have 16 rows."
+    assert all(len(row) == 16 for row in grid), "Every row in 16x16 grid must have 16 columns."
+
+
+def test_print_sudoku_grid_execution():
+    """Ensure the visualizer print function executes without errors."""
+    dataset = loaders.load_csv(DATA_PATH9x9)
+    sample_str = dataset['quizzes'][0]
+
+    # We check if the function runs. If it raises an exception, pytest fails[cite: 1].
+    # Since print functions usually return None, we verify that result.
+    result = visualizer.print_sudoku_grid(sample_str, GRID_SIZE=9)
+    assert result is None
