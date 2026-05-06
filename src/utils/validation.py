@@ -8,12 +8,7 @@ def is_valid(grid, row, col, num, GRID_SIZE=None, BLOCK_SIZE=None):
     if GRID_SIZE is None:
         GRID_SIZE = len(grid)
     if BLOCK_SIZE is None:
-        # Try to infer block size as integer square root
-        import math
-        bs = int(math.isqrt(GRID_SIZE))
-        if bs * bs != GRID_SIZE:
-            raise ValueError(f"Unsupported GRID_SIZE: {GRID_SIZE}")
-        BLOCK_SIZE = bs
+        BLOCK_SIZE = infer_block_size(GRID_SIZE)
 
     # Basic bounds checks
     if not (0 <= row < GRID_SIZE and 0 <= col < GRID_SIZE):
@@ -49,11 +44,7 @@ def is_valid_solution(grid):
     """
     # Infer GRID_SIZE from the grid and compute BLOCK_SIZE
     GRID_SIZE = len(grid)
-    import math
-    bs = int(math.isqrt(GRID_SIZE))
-    if bs * bs != GRID_SIZE:
-        raise ValueError(f"Unsupported GRID_SIZE: {GRID_SIZE}")
-    BLOCK_SIZE = bs
+    BLOCK_SIZE = infer_block_size(GRID_SIZE)
     required_nums = set(range(1, GRID_SIZE + 1))
 
     # Check rows
@@ -98,3 +89,46 @@ def is_valid_solution(grid):
                 return False
 
     return True
+
+"""Shared utilities for the solver module."""
+
+import math
+
+# Supported grid sizes
+SUPPORTED_GRID_SIZES = (9, 16)
+
+
+def infer_block_size(grid_size):
+    """
+    Infers the block size (e.g., 3 for 9x9, 4 for 16x16) from the grid size.
+    
+    Args:
+        grid_size: The size of the Sudoku grid (9 or 16).
+        
+    Returns:
+        int: The block size.
+        
+    Raises:
+        ValueError: If grid_size is not a perfect square or not supported.
+    """
+    block_size = int(math.isqrt(grid_size))
+    if block_size * block_size != grid_size:
+        raise ValueError(f"Unsupported GRID_SIZE: {grid_size}. Must be a perfect square.")
+    if grid_size not in SUPPORTED_GRID_SIZES:
+        raise ValueError(f"Unsupported GRID_SIZE: {grid_size}. Supported sizes: {SUPPORTED_GRID_SIZES}")
+    return block_size
+
+
+def validate_grid_size(grid_size):
+    """
+    Validates that the provided grid size is supported.
+    
+    Args:
+        grid_size: The size to validate.
+        
+    Raises:
+        ValueError: If the grid size is not supported.
+    """
+    if grid_size not in SUPPORTED_GRID_SIZES:
+        raise ValueError(f"Grid size must be one of {SUPPORTED_GRID_SIZES}, got {grid_size}")
+

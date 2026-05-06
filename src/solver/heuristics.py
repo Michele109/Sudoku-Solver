@@ -1,4 +1,4 @@
-from .validation import is_valid
+from ..utils.validation import is_valid,infer_block_size
 
 def find_empty_location(grid, GRID_SIZE=None):
     """
@@ -39,8 +39,7 @@ def calculate_degree(grid, row, col, GRID_SIZE=None, BLOCK_SIZE=None):
     if GRID_SIZE is None:
         GRID_SIZE = len(grid)
     if BLOCK_SIZE is None:
-        import math
-        BLOCK_SIZE = int(math.isqrt(GRID_SIZE))
+        BLOCK_SIZE = infer_block_size(GRID_SIZE)
     degree = 0
     # Row
     for x in range(GRID_SIZE):
@@ -69,8 +68,7 @@ def get_lcv_ordered_values(grid, row, col, GRID_SIZE=None, BLOCK_SIZE=None):
     if GRID_SIZE is None:
         GRID_SIZE = len(grid)
     if BLOCK_SIZE is None:
-        import math
-        BLOCK_SIZE = int(math.isqrt(GRID_SIZE))
+        BLOCK_SIZE = infer_block_size(GRID_SIZE)
     potential_values_with_lcv_score = []
 
     for num_to_try in range(1, GRID_SIZE + 1): # Numbers from 1 to 16

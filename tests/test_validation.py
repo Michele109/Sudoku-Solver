@@ -1,9 +1,6 @@
-from src.solver.validation import is_valid, is_valid_solution
+from conftest import solved_grid
 
-
-def solved_grid(size: int):
-    block = int(size ** 0.5)
-    return [[((r * block + r // block + c) % size) + 1 for c in range(size)] for r in range(size)]
+from src.utils.validation import is_valid, is_valid_solution
 
 
 def test_is_valid_accepts_correct_move_9x9():
