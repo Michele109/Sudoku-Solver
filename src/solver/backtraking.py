@@ -1,11 +1,34 @@
-from .heuristics import find_empty_location, get_lcv_ordered_values
-from .validation import is_valid
+from dataclasses import dataclass
 
-def solve_sudoku(grid):
+from .heuristics import find_empty_location, get_lcv_ordered_values
+from ..utils.validation import is_valid
+
+
+@dataclass
+class SolverStats:
+    """Runtime stats collected during DFS backtracking."""
+
+    recursive_calls: int = 0
+    nodes_expanded: int = 0
+    nodes_generated: int = 0
+    backtracks: int = 0
+    max_depth: int = 0
+    solutions_found: int = 0
+
+def solve_sudoku(grid, stats=None, _depth=0):
+    if stats is not None:
+        stats.recursive_calls += 1
+        stats.max_depth = max(stats.max_depth, _depth)
+
     # Find the next empty cell using MRV heuristic with Degree tie-breaking
     empty_cell = find_empty_location(grid)
     if not empty_cell:
+        if stats is not None:
+            stats.solutions_found += 1
         return True # Sudoku solved!
+
+    if stats is not None:
+        stats.nodes_expanded += 1
 
     row, col = empty_cell
 
@@ -15,14 +38,27 @@ def solve_sudoku(grid):
     # Try values in the domain {1...16} in LCV order
     for num in lcv_ordered_nums:
         if is_valid(grid, row, col, num):
+            if stats is not None:
+                stats.nodes_generated += 1
+
             # Tentative assignment
             grid[row][col] = num
 
             # Recursion (DFS)
-            if solve_sudoku(grid):
+            if solve_sudoku(grid, stats=stats, _depth=_depth + 1):
                 return True
 
             # Failure: Backtrack (remove assignment)
             grid[row][col] = 0
+            if stats is not None:
+                stats.backtracks += 1
 
     return False
+
+
+def solve_sudoku_with_stats(grid):
+    """Solves the grid and returns (solved, stats)."""
+
+    stats = SolverStats()
+    solved = solve_sudoku(grid, stats=stats)
+    return solved, stats

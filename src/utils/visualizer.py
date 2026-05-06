@@ -1,3 +1,11 @@
+try:
+    from ..utils.validation import SUPPORTED_GRID_SIZES, validate_grid_size
+except Exception:
+    # Allow running this file directly (e.g. "python src/utils/visualizer.py")
+    # by falling back to absolute import when package-relative import fails.
+    from src.utils.validation import SUPPORTED_GRID_SIZES, validate_grid_size
+
+
 def char_to_int(char: str):
     """ #tested
     Converts a character to its corresponding integer value for Sudoku.
@@ -29,13 +37,9 @@ def print_sudoku_grid(sudoku_str : str, GRID_SIZE: int):
     Prints a Sudoku grid in a human-readable format. The input is a string representation of the Sudoku grid, where each character represents a cell (0 or '.' for empty cells).
     The GRID_SIZE parameter determines whether it's a 9x9 or 16x16 Sudoku.
     """
-    GRID_SIZES = [9, 16]
+    validate_grid_size(GRID_SIZE)
 
-    #check if the provided GRID_SIZE is valid
-    if GRID_SIZE not in GRID_SIZES:
-        raise ValueError("GRID_SIZE must be 16 or 9.")
-
-    #ceck if the input string length matches the expected length for the given GRID_SIZE
+    #check if the input string length matches the expected length for the given GRID_SIZE
     if len(sudoku_str) != GRID_SIZE * GRID_SIZE:
         raise ValueError(f"Input string length must be {GRID_SIZE * GRID_SIZE} for a {GRID_SIZE}x{GRID_SIZE} Sudoku.")
 
@@ -94,9 +98,7 @@ def prepare_grid_from_string(sudoku_str, GRID_SIZE):
     The input string should have a length of GRID_SIZE * GRID_SIZE, where each character
     represents a cell in the Sudoku grid (0 or '.' for empty cells).
     """
-    GRID_SIZES = [9, 16]
-    if GRID_SIZE not in GRID_SIZES:
-        raise ValueError("GRID_SIZE must be 16 or 9.")
+    validate_grid_size(GRID_SIZE)
 
     grid = []
     for i in range(GRID_SIZE):
