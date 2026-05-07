@@ -35,6 +35,36 @@ def is_valid(grid, row, col, num, GRID_SIZE=None, BLOCK_SIZE=None):
     return True
 
 
+def verify_integrity(original_grid, solved_grid):
+    """
+    Verifies that a solved grid is a valid, complete Sudoku solution that
+    is consistent with the original (unsolved) puzzle.
+
+    Criteria:
+    1. Immutability: every pre-filled (non-zero) cell in original_grid must
+       retain the same value in solved_grid.
+    2. Rule Consistency: every row, column, and sub-grid must contain each
+       digit from 1 to GRID_SIZE exactly once (delegates to is_valid_solution).
+
+    Args:
+        original_grid: 2D list representing the original puzzle (0 = empty).
+        solved_grid:   2D list representing the solver's proposed solution.
+
+    Returns:
+        bool: True if both criteria are satisfied, False otherwise.
+    """
+    GRID_SIZE = len(original_grid)
+
+    # Immutability check: pre-filled cells must be unchanged
+    for r in range(GRID_SIZE):
+        for c in range(GRID_SIZE):
+            if original_grid[r][c] != 0 and original_grid[r][c] != solved_grid[r][c]:
+                return False
+
+    # Rule consistency check
+    return is_valid_solution(solved_grid)
+
+
 def is_valid_solution(grid):
     """
     Checks if a given Sudoku grid is a valid solution.
