@@ -1,6 +1,34 @@
-from ..utils.validation import is_valid,infer_block_size
+from ..utils.validation import infer_block_size
 
-def find_empty_location(grid, GRID_SIZE=None):
+
+def _get_available_values(grid, row, col, GRID_SIZE, BLOCK_SIZE):
+    """Return valid values for an empty cell."""
+    if grid[row][col] != 0:
+        return []
+
+    used_values = set()
+
+    for value in grid[row]:
+        if value != 0:
+            used_values.add(value)
+
+    for r in range(GRID_SIZE):
+        value = grid[r][col]
+        if value != 0:
+            used_values.add(value)
+
+    start_row = row - row % BLOCK_SIZE
+    start_col = col - col % BLOCK_SIZE
+    for r in range(start_row, start_row + BLOCK_SIZE):
+        for c in range(start_col, start_col + BLOCK_SIZE):
+            value = grid[r][c]
+            if value != 0:
+                used_values.add(value)
+
+    return [value for value in range(1, GRID_SIZE + 1) if value not in used_values]
+
+
+def find_empty_location(grid, GRID_SIZE=None, BLOCK_SIZE=None):
     """
     Finds the empty cell with the minimum number of remaining possible values (MRV heuristic).
     In case of a tie, uses the Degree heuristic to select the cell with the highest degree.
@@ -8,6 +36,8 @@ def find_empty_location(grid, GRID_SIZE=None):
     """
     if GRID_SIZE is None:
         GRID_SIZE = len(grid)
+    if BLOCK_SIZE is None:
+        BLOCK_SIZE = infer_block_size(GRID_SIZE)
     min_remaining_values = GRID_SIZE + 1 # Max possible values for a cell is GRID_SIZE
     best_cell = None
     max_degree = -1 # Used for tie-breaking
@@ -15,17 +45,23 @@ def find_empty_location(grid, GRID_SIZE=None):
     for r in range(GRID_SIZE):
         for c in range(GRID_SIZE):
             if grid[r][c] == 0: # If the cell is empty
-                current_remaining_values = 0
-                for num_to_try in range(1, GRID_SIZE + 1): # Numbers from 1 to 16
-                    if is_valid(grid, r, c, num_to_try):
-                        current_remaining_values += 1
+                current_remaining_values = len(
+                    _get_available_values(grid, r, c, GRID_SIZE, BLOCK_SIZE)
+                )
+
+                if current_remaining_values == 0:
+                    return (r, c)
 
                 if current_remaining_values < min_remaining_values: # New best cell for MRV
                     min_remaining_values = current_remaining_values
                     best_cell = (r, c)
-                    max_degree = calculate_degree(grid, r, c) # Calculate degree for this new best cell
+                    max_degree = calculate_degree(
+                        grid, r, c, GRID_SIZE=GRID_SIZE, BLOCK_SIZE=BLOCK_SIZE
+                    ) # Calculate degree for this new best cell
                 elif current_remaining_values == min_remaining_values: # MRV tie, use Degree
-                    current_degree = calculate_degree(grid, r, c)
+                    current_degree = calculate_degree(
+                        grid, r, c, GRID_SIZE=GRID_SIZE, BLOCK_SIZE=BLOCK_SIZE
+                    )
                     if current_degree > max_degree: # This cell has a higher degree
                         best_cell = (r, c)
                         max_degree = current_degree
@@ -69,42 +105,42 @@ def get_lcv_ordered_values(grid, row, col, GRID_SIZE=None, BLOCK_SIZE=None):
         GRID_SIZE = len(grid)
     if BLOCK_SIZE is None:
         BLOCK_SIZE = infer_block_size(GRID_SIZE)
+
+    valid_values = _get_available_values(grid, row, col, GRID_SIZE, BLOCK_SIZE)
+    if len(valid_values) <= 1:
+        return valid_values
+
     potential_values_with_lcv_score = []
+    affected_cells = set()
 
-    for num_to_try in range(1, GRID_SIZE + 1): # Numbers from 1 to 16
-        if is_valid(grid, row, col, num_to_try, GRID_SIZE=GRID_SIZE, BLOCK_SIZE=BLOCK_SIZE):
-            # Temporarily place the number
-            grid[row][col] = num_to_try
-            options_left_for_neighbors = 0
+    for c_affected in range(GRID_SIZE):
+        affected_cells.add((row, c_affected))
+    for r_affected in range(GRID_SIZE):
+        affected_cells.add((r_affected, col))
 
-            # Check affected cells (same row, column, and 4x4 block)
-            affected_cells = set()
-            # Add cells in the same row
-            for c_affected in range(GRID_SIZE):
-                affected_cells.add((row, c_affected))
-            # Add cells in the same column
-            for r_affected in range(GRID_SIZE):
-                affected_cells.add((r_affected, col))
-            # Add cells in the same 4x4 block
-            start_row = row - row % BLOCK_SIZE
-            start_col = col - col % BLOCK_SIZE
-            for r_block in range(start_row, start_row + BLOCK_SIZE):
-                for c_block in range(start_col, start_col + BLOCK_SIZE):
-                    affected_cells.add((r_block, c_block))
+    start_row = row - row % BLOCK_SIZE
+    start_col = col - col % BLOCK_SIZE
+    for r_block in range(start_row, start_row + BLOCK_SIZE):
+        for c_block in range(start_col, start_col + BLOCK_SIZE):
+            affected_cells.add((r_block, c_block))
 
-            # Exclude the current cell itself
-            if (row, col) in affected_cells:
-                affected_cells.remove((row, col))
+    affected_cells.discard((row, col))
 
-            for r_neighbor, c_neighbor in affected_cells:
-                if grid[r_neighbor][c_neighbor] == 0: # If the neighbor is empty
-                    # Count valid options for this neighbor given the temporary placement
-                    for val_option in range(1, GRID_SIZE + 1): # Numbers from 1 to 16
-                        if is_valid(grid, r_neighbor, c_neighbor, val_option, GRID_SIZE=GRID_SIZE, BLOCK_SIZE=BLOCK_SIZE):
-                            options_left_for_neighbors += 1
+    for num_to_try in valid_values:
+        # Temporarily place the number
+        grid[row][col] = num_to_try
+        options_left_for_neighbors = 0
 
-            potential_values_with_lcv_score.append((options_left_for_neighbors, num_to_try))
-            grid[row][col] = 0 # Revert temporary placement
+        for r_neighbor, c_neighbor in affected_cells:
+            if grid[r_neighbor][c_neighbor] == 0: # If the neighbor is empty
+                options_left_for_neighbors += len(
+                    _get_available_values(
+                        grid, r_neighbor, c_neighbor, GRID_SIZE, BLOCK_SIZE
+                    )
+                )
+
+        potential_values_with_lcv_score.append((options_left_for_neighbors, num_to_try))
+        grid[row][col] = 0 # Revert temporary placement
 
     # Sort in descending order of options_left_for_neighbors (more options left is better)
     potential_values_with_lcv_score.sort(key=lambda x: x[0], reverse=True)
