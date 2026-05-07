@@ -4,6 +4,7 @@ Interactive benchmarking entry point for the Sudoku Solver project.
 Supports both 9x9 (Standard) and 16x16 (Hexadoku) puzzles.
 """
 
+import copy
 import random
 import time
 
@@ -11,7 +12,7 @@ import numpy as np
 
 from src.solver.backtraking import solve_sudoku
 from src.utils.loaders import load_csv
-from src.utils.validation import is_valid_solution
+from src.utils.validation import is_valid_solution, verify_integrity
 from src.utils.visualizer import prepare_grid_from_string
 
 # Paths to the puzzle datasets
@@ -99,6 +100,7 @@ def run_benchmark(puzzles: list, n: int, mode: str, grid_size: int) -> None:
 
     for i, puzzle_str in enumerate(selected, start=1):
         grid = prepare_grid_from_string(puzzle_str, grid_size)
+        original_grid = copy.deepcopy(grid)
 
         start = time.perf_counter()
         solved = solve_sudoku(grid)
@@ -106,7 +108,7 @@ def run_benchmark(puzzles: list, n: int, mode: str, grid_size: int) -> None:
 
         times.append(elapsed)
 
-        if solved and is_valid_solution(grid):
+        if solved and verify_integrity(original_grid, grid):
             valid_count += 1
             status = "✓"
         else:
