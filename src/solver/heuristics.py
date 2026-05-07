@@ -49,9 +49,6 @@ def find_empty_location(grid, GRID_SIZE=None, BLOCK_SIZE=None):
                     _get_available_values(grid, r, c, GRID_SIZE, BLOCK_SIZE)
                 )
 
-                if current_remaining_values == 0:
-                    return (r, c)
-
                 if current_remaining_values < min_remaining_values: # New best cell for MRV
                     min_remaining_values = current_remaining_values
                     best_cell = (r, c)
@@ -108,6 +105,7 @@ def get_lcv_ordered_values(grid, row, col, GRID_SIZE=None, BLOCK_SIZE=None):
 
     valid_values = _get_available_values(grid, row, col, GRID_SIZE, BLOCK_SIZE)
     if len(valid_values) <= 1:
+        # LCV ranking is unnecessary for dead-end (0) and forced-move (1) cases.
         return valid_values
 
     potential_values_with_lcv_score = []
