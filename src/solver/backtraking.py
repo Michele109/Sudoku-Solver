@@ -11,6 +11,27 @@ class SudokuSolver:
         # Apply initial constraint propagation
         self._initial_propagation_result = self._apply_constraint_propagation()
 
+        if not self._is_grid_consistent():
+            self._initial_propagation_result = False
+        else:
+            self._initial_propagation_result = self._apply_constraint_propagation()
+
+    def _is_grid_consistent(self):
+        """Validate Sudoku Grid """
+        for r in range(self.BOARD_SIZE):
+            for c in range(self.BOARD_SIZE):
+                num = self.grid[r][c]
+                if num != 0:
+                    # Rimuoviamo temporaneamente il numero per vedere se è piazzabile
+                    self.grid[r][c] = 0
+                    if not self._is_valid(self.grid, r, c, num):
+                        self.grid[r][c] = num  # Ripristiniamo
+                        return False
+                    self.grid[r][c] = num  # Ripristiniamo
+        return True
+
+
+
     def _parse_sudoku_string(self, sudoku_string):
         # Ensure the string is the correct length
         if len(sudoku_string) != self.BOARD_SIZE * self.BOARD_SIZE:
