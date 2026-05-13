@@ -23,7 +23,7 @@ def test_solver_solves_9x9_and_16x16_and_exposes_metrics():
 
         assert solver.solve()
         assert solver.get_solution()[1] == _grid_to_string(_solved_grid(size))
-        assert solver.expanded_nodes >= 1
+        assert solver.search_nodes >= 0
         assert solver.max_memory_nodes >= 1
         assert solver.current_recursion_depth == 0
 

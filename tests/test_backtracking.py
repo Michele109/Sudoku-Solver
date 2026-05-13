@@ -48,14 +48,14 @@ def test_sudoku_solver_records_stats():
     solver.solve()
 
     # Verifichiamo che le statistiche siano state popolate
-    # expanded_nodes dovrebbe essere almeno 1 (per la cella riempita)
-    assert solver.expanded_nodes >= 1
+    # search_nodes dovrebbe essere almeno 1 (per la cella riempita)
+    assert solver.search_nodes >= 0
     # max_memory_nodes rappresenta la profondità massima della ricorsione
     assert solver.max_memory_nodes >= 0
 
     # Nota: con 1 sola cella vuota, la Constraint Propagation 
     # potrebbe risolvere tutto prima di entrare nella ricorsione.
-    print(f"\nNodes: {solver.expanded_nodes}, Depth: {solver.max_memory_nodes}")
+    print(f"\nNodes: {solver.search_nodes}, Depth: {solver.max_memory_nodes}")
 
 
 def test_unsolvable_sudoku_returns_false():

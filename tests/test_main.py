@@ -51,20 +51,20 @@ def test_run_benchmark_random_mode_completes(capsys):
     df = _get_dummy_df(9, rows=5)
 
     # Mockiamo verify_sudoku_solution per evitare di far girare il solver reale
-    # Restituisce: (is_correct, nodes, memory)
-    with patch("main.verify_sudoku_solution", return_value=(True, 10, 5)):
+    # Restituisce: (is_correct, nodes, propagation, memory)
+    with patch("main.verify_sudoku_solution", return_value=(True, 10, 5, 3)):
         run_benchmark(df, n=3, mode="R", grid_size=9)
 
     captured = capsys.readouterr()
     assert "RIEPILOGO BENCHMARK" in captured.out
     assert "Soluzioni Valide" in captured.out
-    assert "Nodi Medi Espansi" in captured.out
+    assert "Nodi Ricerca Medi" in captured.out
 
 def test_run_benchmark_static_mode_completes(capsys):
     """run_benchmark in Static mode should print a summary without errors."""
     df = _get_dummy_df(9, rows=1)
 
-    with patch("main.verify_sudoku_solution", return_value=(True, 10, 5)):
+    with patch("main.verify_sudoku_solution", return_value=(True, 10, 5, 3)):
         run_benchmark(df, n=2, mode="S", grid_size=9)
 
     captured = capsys.readouterr()
@@ -83,7 +83,7 @@ def test_run_benchmark_reports_correct_metrics(capsys):
     df = _get_dummy_df(16, rows=1)
 
     # Mock con valori specifici per testare i calcoli
-    with patch("main.verify_sudoku_solution", return_value=(True, 100, 20)):
+    with patch("main.verify_sudoku_solution", return_value=(True, 100, 20, 5)):
         run_benchmark(df, n=1, mode="R", grid_size=16)
 
     out = capsys.readouterr().out
