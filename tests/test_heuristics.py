@@ -27,3 +27,14 @@ def test_get_lcv_ordered_values_returns_only_valid_value_for_single_hole():
     grid[0][0] = 0
 
     assert get_lcv_ordered_values(grid, 0, 0) == [1]
+
+
+def test_find_empty_location_returns_cell_with_no_candidates():
+    grid = solved_grid(9)
+    grid[0][0] = 0
+    grid[8][8] = 0
+    grid[1][0] = 1
+
+    assert get_lcv_ordered_values(grid, 0, 0) == []
+    assert len(get_lcv_ordered_values(grid, 8, 8)) >= 1
+    assert find_empty_location(grid) == (0, 0)

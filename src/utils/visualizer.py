@@ -1,36 +1,5 @@
-try:
-    from ..utils.validation import SUPPORTED_GRID_SIZES, validate_grid_size
-except Exception:
-    # Allow running this file directly (e.g. "python src/utils/visualizer.py")
-    # by falling back to absolute import when package-relative import fails.
-    from src.utils.validation import SUPPORTED_GRID_SIZES, validate_grid_size
-
-
-def char_to_int(char: str):
-    """ #tested
-    Converts a character to its corresponding integer value for Sudoku.
-    """
-    if char == '0' or char == '.':
-        return 0
-    elif '1' <= char <= '9':
-        return int(char)
-    elif 'A' <= char <= 'G': # Assuming A=10, B=11, ..., G=16
-        return ord(char) - ord('A') + 10
-    return int(char)
-
-
-def int_to_char(num: int):
-    """ #tested
-    Converts an integer value back to its character representation for Sudoku.
-    """
-    if num == 0:
-        return '.'
-    elif 1 <= num <= 9:
-        return str(num)
-    elif 10 <= num <= 16:
-        return chr(num - 10 + ord('A'))
-    return str(num)
-
+from src.utils.validation import validate_grid_size
+from src.utils.constants import char_to_int, int_to_char
 
 def print_sudoku_grid(sudoku_str : str, GRID_SIZE: int):
     """ #tested
