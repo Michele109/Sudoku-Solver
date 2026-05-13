@@ -190,29 +190,35 @@ class SudokuSolver:
         if not self._initial_propagation_result: # If initial propagation failed, puzzle is unsolvable
             return False
 
+        return self._solve_recursive()
+
+    def _solve_recursive(self):
         self.current_recursion_depth += 1
         self.max_memory_nodes = max(self.max_memory_nodes, self.current_recursion_depth)
 
-        row, col = self._find_empty(self.grid) # Uses MRV to select the next cell
+        try:
+            row, col = self._find_empty(self.grid) # Uses MRV to select the next cell
 
-        if row is None: # No empty cells, Sudoku is solved
-            self.current_recursion_depth -= 1
-            return True
-
-        self.expanded_nodes += 1 # Increment expanded nodes for each decision point
-
-        # Try numbers only from the pre-calculated possible values for this cell
-        possible_values_for_cell = self._get_possible_values(row, col)
-
-        for num in possible_values_for_cell:
-            self.grid[row][col] = num
-            if self.solve():
+            if row is None: # No empty cells, Sudoku is solved
                 return True
-            # Backtrack
-            self.grid[row][col] = 0
 
-        self.current_recursion_depth -= 1
-        return False # No number worked in this cell or an earlier decision was wrong
+            self.expanded_nodes += 1 # Increment expanded nodes for each decision point
+
+            # Try numbers only from the pre-calculated possible values for this cell
+            possible_values_for_cell = self._get_possible_values(row, col)
+
+            for num in possible_values_for_cell:
+                previous_grid_state = [grid_row[:] for grid_row in self.grid]
+                self.grid[row][col] = num
+
+                if self._apply_constraint_propagation() and self._solve_recursive():
+                    return True
+
+                self.grid = previous_grid_state
+
+            return False # No number worked in this cell or an earlier decision was wrong
+        finally:
+            self.current_recursion_depth -= 1
 
     def get_solution(self):
         """Returns the solved Sudoku grid in character format and as a single string."""
