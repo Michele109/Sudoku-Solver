@@ -1,30 +1,16 @@
-"""
-Interactive benchmarking entry point for the Sudoku Solver project.
+import pandas as pd  # Necessario per gestire le righe del dataset
 
-Supports both 9x9 (Standard) and 16x16 (Hexadoku) puzzles.
-"""
-
-import copy
-import random
-import time
-
-import numpy as np
-
-from src.solver.backtraking import solve_sudoku
 from src.utils.loaders import load_csv
-from src.utils.validation import is_valid_solution, verify_integrity
-from src.utils.visualizer import prepare_grid_from_string
+from src.utils.validation import verify_sudoku_solution
 
-# Paths to the puzzle datasets
+# Paths e configurazioni (rimangono simili ai tuoi)
 DATA_PATH_9x9 = "data/9x9sudoku.csv"
 DATA_PATH_16x16 = "data/16x16sudoku.csv"
 
-# Map each supported grid size to its dataset path and puzzle column name
 GRID_CONFIG = {
-    9: {"path": DATA_PATH_9x9, "column": "quizzes"},
-    16: {"path": DATA_PATH_16x16, "column": "Sudoku"},
+    9: {"path": DATA_PATH_9x9, "column": "quizzes", "sol_col": "solutions"},  # Aggiunta colonna soluzione
+    16: {"path": DATA_PATH_16x16, "column": "Sudoku", "sol_col": "solution"},
 }
-
 
 def prompt_grid_size() -> int:
     """Prompt the user to choose between 9x9 and 16x16."""
@@ -54,100 +40,79 @@ def prompt_execution_mode() -> str:
             return raw
         print("  Invalid input. Please enter R or S.")
 
-
-def load_puzzles(grid_size: int):
-    """Load the puzzle dataset for the given grid size.
-
-    Returns a list of puzzle strings, or None on failure.
-    """
+def load_puzzles_df(grid_size: int):
+    """Carica l'intero DataFrame per avere sia quiz che soluzioni."""
     config = GRID_CONFIG[grid_size]
     df = load_csv(config["path"])
-    if df is None:
-        return None
-    column = config["column"]
-    if column not in df.columns:
-        print(f"Error: column '{column}' not found in dataset (available: {list(df.columns)}).")
-        return None
-    return df[column].tolist()
+    return df
 
 
-def run_benchmark(puzzles: list, n: int, mode: str, grid_size: int) -> None:
-    """Execute the benchmark and print a statistical summary.
-
-    Parameters
-    ----------
-    puzzles:   list of puzzle strings loaded from the dataset.
-    n:         number of instances to process.
-    mode:      'R' for random selection, 'S' for static (same puzzle, n runs).
-    grid_size: 9 or 16.
-    """
-    if len(puzzles) == 0:
-        print("Error: dataset is empty.")
+def run_benchmark(df: pd.DataFrame, n: int, mode: str, grid_size: int) -> None:
+    if df is None or df.empty:
+        print("Errore: il dataset è vuoto.")
         return
 
-    # Select the puzzle(s) to solve
+    config = GRID_CONFIG[grid_size]
+
+    # Selezione dei dati
     if mode == "R":
-        n = min(n, len(puzzles))
-        selected = random.sample(puzzles, n)
-    else:  # Static mode: pick one puzzle, repeat n times
-        puzzle_str = random.choice(puzzles)
-        selected = [puzzle_str] * n
+        n = min(n, len(df))
+        selected_data = df.sample(n)
+    else:
+        # Prende una riga a caso e la ripete n volte
+        single_row = df.sample(1)
+        selected_data = pd.concat([single_row] * n)
 
-    times = []
     valid_count = 0
+    total_nodes = 0
+    max_mem_reached = 0
 
-    print(f"\nRunning {n} puzzle(s) on a {grid_size}x{grid_size} grid …\n")
+    print(f"\nEsecuzione di {n} puzzle su griglia {grid_size}x{grid_size} ...\n")
 
-    for i, puzzle_str in enumerate(selected, start=1):
-        grid = prepare_grid_from_string(puzzle_str, grid_size)
-        original_grid = copy.deepcopy(grid)
+    for _, row in selected_data.iterrows():
+        # Adattiamo i nomi delle colonne per la funzione verify_sudoku_solution
+        # che si aspetta 'Sudoku' e 'solution'
+        row_to_verify = pd.Series({
+            'Sudoku': row[config["column"]],
+            'solution': row[config["sol_col"]]
+        })
 
-        start = time.perf_counter()
-        solved = solve_sudoku(grid)
-        elapsed = time.perf_counter() - start
+        # Usiamo la tua nuova funzione di validazione
+        is_correct, nodes, memory = verify_sudoku_solution(row_to_verify)
 
-        times.append(elapsed)
-
-        if solved and verify_integrity(original_grid, grid):
+        if is_correct:
             valid_count += 1
-            status = "✓"
+            total_nodes += nodes
+            max_mem_reached = max(max_mem_reached, memory)
+            print(".", end="", flush=True)  # Feedback visivo
         else:
-            status = "✗"
+            print("x", end="", flush=True)
 
-        print(f"  Puzzle {i:>4}: {elapsed:.4f}s  {status}")
-
-    # Statistical summary
-    times_arr = np.array(times)
     validation_pct = (valid_count / n) * 100
+    avg_nodes = total_nodes / n if n > 0 else 0
 
-    print("\n" + "=" * 45)
-    print("  BENCHMARK SUMMARY")
+    print("\n\n" + "=" * 45)
+    print("  RIEPILOGO BENCHMARK")
     print("=" * 45)
-    print(f"  Grid size       : {grid_size}x{grid_size}")
-    print(f"  Mode            : {'Random' if mode == 'R' else 'Static'}")
-    print(f"  Puzzles run     : {n}")
-    print(f"  Mean time       : {times_arr.mean():.4f}s")
-    print(f"  Min  time       : {times_arr.min():.4f}s")
-    print(f"  Max  time       : {times_arr.max():.4f}s")
-    print(f"  Std  deviation  : {times_arr.std():.4f}s")
-    print(f"  Valid solutions : {valid_count}/{n} ({validation_pct:.1f}%)")
+    print(f"  Dimensione Griglia : {grid_size}x{grid_size}")
+    print(f"  Soluzioni Valide   : {valid_count}/{n} ({validation_pct:.1f}%)")
+    print(f"  Nodi Medi Espansi  : {avg_nodes:.2f}")
+    print(f"  Profondità Massima : {max_mem_reached}")
     print("=" * 45)
 
 
 def main() -> None:
-    """Interactive entry point."""
     print("\n=== Sudoku Solver Benchmarking Suite ===\n")
-
     grid_size = prompt_grid_size()
     n = prompt_sample_size()
     mode = prompt_execution_mode()
 
-    puzzles = load_puzzles(grid_size)
-    if puzzles is None:
-        print("Failed to load dataset. Exiting.")
+    df = load_puzzles_df(grid_size)
+    if df is None:
+        print("Impossibile caricare il dataset. Uscita.")
         return
 
-    run_benchmark(puzzles, n, mode, grid_size)
+    run_benchmark(df, n, mode, grid_size)
 
 
 if __name__ == "__main__":
