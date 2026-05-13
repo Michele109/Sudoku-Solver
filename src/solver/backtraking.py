@@ -207,6 +207,7 @@ class SudokuSolver:
         for num in possible_values_for_cell:
             self.grid[row][col] = num
             if self.solve():
+                self.current_recursion_depth -= 1
                 return True
             # Backtrack
             self.grid[row][col] = 0
