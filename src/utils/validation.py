@@ -1,3 +1,7 @@
+import pandas as pd
+
+from src.utils.constants import SUPPORTED_GRID_SIZES
+
 def is_valid(grid, row, col, num, GRID_SIZE=None, BLOCK_SIZE=None):
     """
     General validity check for placing `num` at (row, col) in `grid`.
@@ -70,7 +74,7 @@ def is_valid_solution(grid):
     Checks if a given Sudoku grid is a valid solution.
     Supports both 9x9 and 16x16 grids (or any square size).
     A grid is valid if each row, each column, and each subgrid
-    contains all of the digits from 1 to GRID_SIZE without repetition.
+    contains all the digits from 1 to GRID_SIZE without repetition.
     """
     # Infer GRID_SIZE from the grid and compute BLOCK_SIZE
     GRID_SIZE = len(grid)
@@ -124,10 +128,6 @@ def is_valid_solution(grid):
 
 import math
 
-# Supported grid sizes
-SUPPORTED_GRID_SIZES = (9, 16)
-
-
 def infer_block_size(grid_size):
     """
     Infers the block size (e.g., 3 for 9x9, 4 for 16x16) from the grid size.
@@ -162,3 +162,28 @@ def validate_grid_size(grid_size):
     if grid_size not in SUPPORTED_GRID_SIZES:
         raise ValueError(f"Grid size must be one of {SUPPORTED_GRID_SIZES}, got {grid_size}")
 
+
+def verify_sudoku_solution(row_data: pd.Series):
+      """Verifies if the SudokuSolver finds the correct solution for a given row of data.
+
+      Args:
+          row_data (pd.Series): A row from the Sudoku DataFrame, containing 'Sudoku' and 'solution' strings.
+
+      Returns:
+          tuple: (bool, int, int) - (True if solution matches, Expanded Nodes, Max Memory Nodes)
+      """
+
+      from src.solver.backtraking import SudokuSolver
+
+      puzzle_str = row_data['Sudoku']
+      expected_solution_str = row_data['solution']
+
+      solver = SudokuSolver(puzzle_str)
+
+      if solver.solve():
+          # Convert the solved grid back to a single string for comparison
+          found_solution_str =  solver.get_solution()[1]
+          is_correct = (found_solution_str == expected_solution_str)
+          return is_correct, solver.expanded_nodes, solver.max_memory_nodes
+      else:
+          return False, solver.expanded_nodes, solver.max_memory_nodes # Puzzle not solvable
