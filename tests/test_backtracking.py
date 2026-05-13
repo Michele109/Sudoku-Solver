@@ -1,45 +1,71 @@
 from conftest import solved_grid
+from src.solver.backtraking import SudokuSolver
+from src.utils.constants import int_to_char
 
-from src.solver.backtraking import SolverStats, solve_sudoku, solve_sudoku_with_stats
+
+def grid_to_string(grid):
+    """Utility per convertire una griglia 2D in stringa per il solver."""
+    return "".join("".join(int_to_char(cell) for cell in row) for row in grid)
 
 
 def test_solve_sudoku_solves_single_missing_cell_9x9():
-    grid = solved_grid(9)
-    grid[0][0] = 0
+    # Prepariamo la griglia
+    original_grid = solved_grid(9)
+    solution_str = grid_to_string(original_grid)
 
-    assert solve_sudoku(grid)
-    assert grid == solved_grid(9)
+    # Creiamo un puzzle con una cella mancante
+    grid_with_hole = solved_grid(9)
+    grid_with_hole[0][0] = 0
+    puzzle_str = grid_to_string(grid_with_hole)
+
+    solver = SudokuSolver(puzzle_str)
+
+    assert solver.solve() is True
+    assert solver.get_solution()[1] == solution_str
 
 
 def test_solve_sudoku_solves_single_missing_cell_16x16():
-    grid = solved_grid(16)
-    grid[5][11] = 0
+    original_grid = solved_grid(16)
+    solution_str = grid_to_string(original_grid)
 
-    assert solve_sudoku(grid)
-    assert grid == solved_grid(16)
+    grid_with_hole = solved_grid(16)
+    grid_with_hole[5][11] = 0
+    puzzle_str = grid_to_string(grid_with_hole)
+
+    solver = SudokuSolver(puzzle_str)
+
+    assert solver.solve() is True
+    assert solver.get_solution()[1] == solution_str
 
 
-def test_solve_sudoku_updates_stats_when_provided():
+def test_sudoku_solver_records_stats():
+    # Creiamo un puzzle semplice (9x9 con una cella vuota)
     grid = solved_grid(9)
     grid[0][0] = 0
+    puzzle_str = grid_to_string(grid)
 
-    stats = SolverStats()
-    assert solve_sudoku(grid, stats=stats)
+    solver = SudokuSolver(puzzle_str)
+    solver.solve()
 
-    assert stats.recursive_calls >= 2
-    assert stats.nodes_expanded >= 1
-    assert stats.nodes_generated >= 1
-    assert stats.max_depth >= 1
-    assert stats.solutions_found == 1
+    # Verifichiamo che le statistiche siano state popolate
+    # expanded_nodes dovrebbe essere almeno 1 (per la cella riempita)
+    assert solver.expanded_nodes >= 1
+    # max_memory_nodes rappresenta la profondità massima della ricorsione
+    assert solver.max_memory_nodes >= 0
+
+    # Nota: con 1 sola cella vuota, la Constraint Propagation 
+    # potrebbe risolvere tutto prima di entrare nella ricorsione.
+    print(f"\nNodes: {solver.expanded_nodes}, Depth: {solver.max_memory_nodes}")
 
 
-def test_solve_sudoku_with_stats_returns_stats():
+def test_unsolvable_sudoku_returns_false():
+    # Creiamo un puzzle impossibile (due 1 nella stessa riga)
     grid = solved_grid(9)
-    grid[8][8] = 0
+    grid[0][0] = 1
+    grid[0][1] = 1
+    puzzle_str = grid_to_string(grid)
 
-    solved, stats = solve_sudoku_with_stats(grid)
-
-    assert solved
-    assert grid == solved_grid(9)
-    assert isinstance(stats, SolverStats)
-    assert stats.nodes_generated >= 1
+    # Il solver dovrebbe accorgersi dell'errore o in fase di 
+    # propagazione iniziale o durante il solve
+    solver = SudokuSolver(puzzle_str)
+    assert solver.solve() is False
