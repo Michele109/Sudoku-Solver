@@ -57,7 +57,9 @@ def run_benchmark(df: pd.DataFrame, n: int, mode: str, grid_size: int) -> None:
         selected_data = pd.concat([single_row] * n)
 
     valid_count = 0
-    total_nodes = 0
+    total_search_nodes = 0
+    total_depth = 0
+    total_propagation_nodes = 0
     max_mem_reached = 0
 
     print(f"\nEsecuzione di {n} puzzle su griglia {grid_size}x{grid_size} ...\n")
@@ -71,26 +73,30 @@ def run_benchmark(df: pd.DataFrame, n: int, mode: str, grid_size: int) -> None:
         })
 
         # Usiamo la tua nuova funzione di validazione
-        is_correct, nodes, memory = verify_sudoku_solution(row_to_verify)
-
+        is_correct, search_nodes, propagation_nodes, memory = (verify_sudoku_solution(row_to_verify))
         if is_correct:
+            total_depth += memory
             valid_count += 1
-            total_nodes += nodes
+            total_search_nodes += search_nodes
+            total_propagation_nodes += propagation_nodes
             max_mem_reached = max(max_mem_reached, memory)
             print(".", end="", flush=True)  # Feedback visivo
         else:
             print("x", end="", flush=True)
 
     validation_pct = (valid_count / n) * 100
-    avg_nodes = total_nodes / n if n > 0 else 0
-
+    avg_search_nodes = (total_search_nodes / n if n > 0 else 0)
+    avg_propagation_nodes = (total_propagation_nodes / n if n > 0 else 0)
+    avg_depth = (total_depth / valid_count if valid_count > 0 else 0)
     print("\n\n" + "=" * 45)
     print("  RIEPILOGO BENCHMARK")
     print("=" * 45)
-    print(f"  Dimensione Griglia : {grid_size}x{grid_size}")
-    print(f"  Soluzioni Valide   : {valid_count}/{n} ({validation_pct:.1f}%)")
-    print(f"  Nodi Medi Espansi  : {avg_nodes:.2f}")
-    print(f"  Profondità Massima : {max_mem_reached}")
+    print(f"  Dimensione Griglia       : {grid_size}x{grid_size}")
+    print(f"  Soluzioni Valide         : {valid_count}/{n} ({validation_pct:.1f}%)") #quanti Sudoku sono stati risolti correttamente
+    print(f"  Nodi Ricerca Medi        : {avg_search_nodes:.2f}") #quanti nodi del search tree DFS sono stati espansi in media
+    print(f"  Assegnamenti Propagation : {avg_propagation_nodes:.2f}") #quante celle sono state riempite automaticamente tramite inferenza CSP
+    print(f"  Profondità Media         : {avg_depth:.2f}") #quanto in profondità il DFS entra mediamente
+    print(f"  Profondità Massima       : {max_mem_reached}")
     print("=" * 45)
 
 

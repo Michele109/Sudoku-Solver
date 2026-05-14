@@ -160,9 +160,22 @@ def verify_sudoku_solution(row_data: pd.Series):
       solver = SudokuSolver(puzzle_str)
 
       if solver.solve():
-          # Convert the solved grid back to a single string for comparison
-          found_solution_str =  solver.get_solution()[1]
-          is_correct = (found_solution_str == expected_solution_str)
-          return is_correct, solver.expanded_nodes, solver.max_memory_nodes
+
+    # Convert the solved grid back to a single string for comparison
+        found_solution_str = solver.get_solution()[1]
+
+        is_correct = (found_solution_str == expected_solution_str)
+
+        return (
+        is_correct,
+        solver.search_nodes,
+        solver.propagation_assignments,
+        solver.max_memory_nodes
+        )
       else:
-          return False, solver.expanded_nodes, solver.max_memory_nodes # Puzzle not solvable
+          return (
+    False,
+    solver.search_nodes,
+    solver.propagation_assignments,
+    solver.max_memory_nodes
+)
