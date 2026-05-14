@@ -1,3 +1,12 @@
+#data paths
+DATA_PATH9x9 = 'data/9x9sudoku.csv'
+DATA_PATH16x16 = 'data/16x16sudoku.csv'
+
+# Configuration for grid sizes, paths, and column names
+GRID_CONFIG = {
+    9: {"path": DATA_PATH9x9, "column": "quizzes", "sol_col": "solutions"},  # Aggiunta colonna soluzione
+    16: {"path": DATA_PATH16x16, "column": "Sudoku", "sol_col": "solution"},
+}
 
 # Supported grid sizes
 SUPPORTED_GRID_SIZES = (9, 16)

@@ -2,15 +2,8 @@ import pandas as pd  # Necessario per gestire le righe del dataset
 
 from src.utils.loaders import load_csv
 from src.utils.validation import verify_sudoku_solution
+from src.utils.constants import GRID_CONFIG
 
-# Paths e configurazioni (rimangono simili ai tuoi)
-DATA_PATH_9x9 = "data/9x9sudoku.csv"
-DATA_PATH_16x16 = "data/16x16sudoku.csv"
-
-GRID_CONFIG = {
-    9: {"path": DATA_PATH_9x9, "column": "quizzes", "sol_col": "solutions"},  # Aggiunta colonna soluzione
-    16: {"path": DATA_PATH_16x16, "column": "Sudoku", "sol_col": "solution"},
-}
 
 def prompt_grid_size() -> int:
     """Prompt the user to choose between 9x9 and 16x16."""

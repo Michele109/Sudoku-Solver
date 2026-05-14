@@ -1,22 +1,16 @@
 from conftest import solved_grid
 from src.solver.backtraking import SudokuSolver
-from src.utils.constants import int_to_char
-
-
-def grid_to_string(grid):
-    """Utility per convertire una griglia 2D in stringa per il solver."""
-    return "".join("".join(int_to_char(cell) for cell in row) for row in grid)
-
+from src.utils.visualizer import prepare_string_from_grid
 
 def test_solve_sudoku_solves_single_missing_cell_9x9():
     # Prepariamo la griglia
     original_grid = solved_grid(9)
-    solution_str = grid_to_string(original_grid)
+    solution_str = prepare_string_from_grid(original_grid)
 
     # Creiamo un puzzle con una cella mancante
     grid_with_hole = solved_grid(9)
     grid_with_hole[0][0] = 0
-    puzzle_str = grid_to_string(grid_with_hole)
+    puzzle_str = prepare_string_from_grid(grid_with_hole)
 
     solver = SudokuSolver(puzzle_str)
 
@@ -26,11 +20,11 @@ def test_solve_sudoku_solves_single_missing_cell_9x9():
 
 def test_solve_sudoku_solves_single_missing_cell_16x16():
     original_grid = solved_grid(16)
-    solution_str = grid_to_string(original_grid)
+    solution_str = prepare_string_from_grid(original_grid)
 
     grid_with_hole = solved_grid(16)
     grid_with_hole[5][11] = 0
-    puzzle_str = grid_to_string(grid_with_hole)
+    puzzle_str = prepare_string_from_grid(grid_with_hole)
 
     solver = SudokuSolver(puzzle_str)
 
@@ -42,7 +36,7 @@ def test_sudoku_solver_records_stats():
     # Creiamo un puzzle semplice (9x9 con una cella vuota)
     grid = solved_grid(9)
     grid[0][0] = 0
-    puzzle_str = grid_to_string(grid)
+    puzzle_str = prepare_string_from_grid(grid)
 
     solver = SudokuSolver(puzzle_str)
     solver.solve()
@@ -63,7 +57,7 @@ def test_unsolvable_sudoku_returns_false():
     grid = solved_grid(9)
     grid[0][0] = 1
     grid[0][1] = 1
-    puzzle_str = grid_to_string(grid)
+    puzzle_str = prepare_string_from_grid(grid)
 
     # Il solver dovrebbe accorgersi dell'errore o in fase di 
     # propagazione iniziale o durante il solve

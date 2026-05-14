@@ -1,8 +1,9 @@
 import pandas as pd
+import math
 
 from src.utils.constants import SUPPORTED_GRID_SIZES
 
-def is_valid(grid, row, col, num, GRID_SIZE=None, BLOCK_SIZE=None):
+def is_valid(grid: list, row: int, col: int, num: int, GRID_SIZE=None, BLOCK_SIZE=None) -> bool:
     """
     General validity check for placing `num` at (row, col) in `grid`.
     If GRID_SIZE or BLOCK_SIZE aren't provided they are inferred from the grid.
@@ -39,23 +40,10 @@ def is_valid(grid, row, col, num, GRID_SIZE=None, BLOCK_SIZE=None):
     return True
 
 
-def verify_integrity(original_grid, solved_grid):
+def verify_integrity(original_grid: list, solved_grid: list):
     """
     Verifies that a solved grid is a valid, complete Sudoku solution that
     is consistent with the original (unsolved) puzzle.
-
-    Criteria:
-    1. Immutability: every pre-filled (non-zero) cell in original_grid must
-       retain the same value in solved_grid.
-    2. Rule Consistency: every row, column, and sub-grid must contain each
-       digit from 1 to GRID_SIZE exactly once (delegates to is_valid_solution).
-
-    Args:
-        original_grid: 2D list representing the original puzzle (0 = empty).
-        solved_grid:   2D list representing the solver's proposed solution.
-
-    Returns:
-        bool: True if both criteria are satisfied, False otherwise.
     """
     GRID_SIZE = len(original_grid)
 
@@ -69,7 +57,7 @@ def verify_integrity(original_grid, solved_grid):
     return is_valid_solution(solved_grid)
 
 
-def is_valid_solution(grid):
+def is_valid_solution(grid: list) -> bool:
     """
     Checks if a given Sudoku grid is a valid solution.
     Supports both 9x9 and 16x16 grids (or any square size).
@@ -124,11 +112,7 @@ def is_valid_solution(grid):
 
     return True
 
-"""Shared utilities for the solver module."""
-
-import math
-
-def infer_block_size(grid_size):
+def infer_block_size(grid_size: int) -> int:
     """
     Infers the block size (e.g., 3 for 9x9, 4 for 16x16) from the grid size.
     
@@ -164,13 +148,8 @@ def validate_grid_size(grid_size):
 
 
 def verify_sudoku_solution(row_data: pd.Series):
-      """Verifies if the SudokuSolver finds the correct solution for a given row of data.
-
-      Args:
-          row_data (pd.Series): A row from the Sudoku DataFrame, containing 'Sudoku' and 'solution' strings.
-
-      Returns:
-          tuple: (bool, int, int) - (True if solution matches, Expanded Nodes, Max Memory Nodes)
+      """
+      Verifies if the SudokuSolver finds the correct solution for a given row of data.
       """
 
       from src.solver.backtraking import SudokuSolver

@@ -1,32 +1,20 @@
-"""Tests for the module-level helper functions in main.py."""
-
-
 from unittest.mock import  patch
 import pandas as pd
 
 from main import load_puzzles_df, run_benchmark
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
 
 def _make_puzzle_str(grid_size: int) -> str:
     """Return a minimal solved-puzzle string (all 1s in a legal pattern)."""
-    # Usiamo una stringa di soli '1' o altri caratteri per simulare un puzzle
-    # In un test reale, SudokuSolver proverà a risolverlo.
     return "1" * (grid_size * grid_size)
 
 def _get_dummy_df(grid_size: int, rows: int = 2):
-    """Crea un DataFrame fake con le colonne corrette per 9x9 o 16x16."""
+    """Helper function to create a dummy DataFrame with the correct structure for testing."""
     puzzle = _make_puzzle_str(grid_size)
     if grid_size == 9:
         return pd.DataFrame({"quizzes": [puzzle] * rows, "solutions": [puzzle] * rows})
     else:
         return pd.DataFrame({"Sudoku": [puzzle] * rows, "solution": [puzzle] * rows})
-
-# ---------------------------------------------------------------------------
-# load_puzzles_df
-# ---------------------------------------------------------------------------
 
 def test_load_puzzles_df_returns_none_when_csv_missing():
     """load_puzzles_df should return None when the CSV file cannot be loaded."""
@@ -41,10 +29,6 @@ def test_load_puzzles_df_returns_dataframe_on_success():
         result = load_puzzles_df(9)
     assert isinstance(result, pd.DataFrame)
     assert not result.empty
-
-# ---------------------------------------------------------------------------
-# run_benchmark
-# ---------------------------------------------------------------------------
 
 def test_run_benchmark_random_mode_completes(capsys):
     """run_benchmark in Random mode should print a summary without errors."""
@@ -79,7 +63,7 @@ def test_run_benchmark_empty_dataset_prints_error(capsys):
     assert "vuoto" in captured.out.lower()
 
 def test_run_benchmark_reports_correct_metrics(capsys):
-    """Verifica che le nuove metriche (nodi e memoria) appaiano nel riepilogo."""
+    """Verify that run_benchmark reports the correct metrics based on the mocked verify_sudoku_solution."""
     df = _get_dummy_df(16, rows=1)
 
     # Mock con valori specifici per testare i calcoli
