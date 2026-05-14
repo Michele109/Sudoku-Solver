@@ -1,7 +1,6 @@
 import copy
 
 from conftest import solved_grid
-
 from src.utils.validation import is_valid, is_valid_solution, verify_integrity
 
 
@@ -33,11 +32,6 @@ def test_is_valid_solution_rejects_duplicate_value():
 
     assert not is_valid_solution(grid)
 
-
-# ---------------------------------------------------------------------------
-# verify_integrity
-# ---------------------------------------------------------------------------
-
 def test_verify_integrity_accepts_valid_solution():
     """A correctly solved grid must pass verify_integrity."""
     original = solved_grid(9)
@@ -48,7 +42,6 @@ def test_verify_integrity_accepts_valid_solution():
 
     assert verify_integrity(original, solved)
 
-
 def test_verify_integrity_rejects_mutated_given_cell():
     """If a pre-filled cell in the original is changed in the solution, it must fail."""
     original = solved_grid(9)
@@ -57,7 +50,6 @@ def test_verify_integrity_rejects_mutated_given_cell():
     solved[0][0] = (original[0][0] % 9) + 1  # a different value
 
     assert not verify_integrity(original, solved)
-
 
 def test_verify_integrity_rejects_invalid_solution():
     """A grid that violates Sudoku rules must fail even if given cells are intact."""
@@ -69,14 +61,12 @@ def test_verify_integrity_rejects_invalid_solution():
 
     assert not verify_integrity(original, solved)
 
-
 def test_verify_integrity_accepts_fully_prefilled_solved_grid():
     """A grid with no empty cells that is valid should pass."""
     original = solved_grid(9)
     solved = copy.deepcopy(original)
 
     assert verify_integrity(original, solved)
-
 
 def test_verify_integrity_accepts_16x16():
     """verify_integrity must work correctly for 16x16 grids."""

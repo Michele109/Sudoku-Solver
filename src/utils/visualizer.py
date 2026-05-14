@@ -1,16 +1,13 @@
 from src.utils.validation import validate_grid_size
 from src.utils.constants import char_to_int, int_to_char
 
-def print_sudoku_grid(sudoku_str : str, GRID_SIZE: int):
-    """ #tested
+def print_sudoku_grid(sudoku_str : str):
+    """
     Prints a Sudoku grid in a human-readable format. The input is a string representation of the Sudoku grid, where each character represents a cell (0 or '.' for empty cells).
     The GRID_SIZE parameter determines whether it's a 9x9 or 16x16 Sudoku.
     """
+    GRID_SIZE = int(len(sudoku_str)**0.5)
     validate_grid_size(GRID_SIZE)
-
-    #check if the input string length matches the expected length for the given GRID_SIZE
-    if len(sudoku_str) != GRID_SIZE * GRID_SIZE:
-        raise ValueError(f"Input string length must be {GRID_SIZE * GRID_SIZE} for a {GRID_SIZE}x{GRID_SIZE} Sudoku.")
 
     if GRID_SIZE == 16:
 
@@ -61,12 +58,13 @@ def print_sudoku_grid(sudoku_str : str, GRID_SIZE: int):
                     print(char_to_display, end=" ")
 
 
-def prepare_grid_from_string(sudoku_str, GRID_SIZE):
+def prepare_grid_from_string(sudoku_str: str) -> list:
     """
     Converts a string representation of a Sudoku grid into a 2D list (grid) of integers.
     The input string should have a length of GRID_SIZE * GRID_SIZE, where each character
     represents a cell in the Sudoku grid (0 or '.' for empty cells).
     """
+    GRID_SIZE = int(len(sudoku_str)**0.5)
     validate_grid_size(GRID_SIZE)
 
     grid = []
@@ -77,3 +75,9 @@ def prepare_grid_from_string(sudoku_str, GRID_SIZE):
             row.append(char_to_int(char_val))
         grid.append(row)
     return grid
+
+def prepare_string_from_grid(grid: list) -> str:
+    """
+    Prepares a string representation of a Sudoku grid from a 2D list (grid) of integers.
+    """
+    return "".join("".join(int_to_char(cell) for cell in row) for row in grid)

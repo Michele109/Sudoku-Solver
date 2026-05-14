@@ -1,10 +1,8 @@
 from src.solver.backtraking import SudokuSolver
 
-
 def _solved_grid(size: int):
     block = int(size ** 0.5)
     return [[((r * block + r // block + c) % size) + 1 for c in range(size)] for r in range(size)]
-
 
 def _grid_to_string(grid):
     chars = []
