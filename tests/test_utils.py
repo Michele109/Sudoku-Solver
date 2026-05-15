@@ -1,6 +1,6 @@
 from src.utils import visualizer
 from src.utils import loaders
-from src.utils.constants import  DATA_PATH9x9, DATA_PATH16x16
+from src.utils.constants import DATA_PATH9x9, DATA_PATH16x16
 
 def test_prepare_grid_9x9():
     """Verify that a 9x9 Sudoku string is correctly converted to a grid."""

@@ -1,4 +1,4 @@
-from unittest.mock import  patch
+from unittest.mock import patch
 import pandas as pd
 
 from main import load_puzzles_df, run_benchmark

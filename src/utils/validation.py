@@ -148,18 +148,18 @@ def validate_grid_size(grid_size):
 
 
 def verify_sudoku_solution(row_data: pd.Series):
-      """
-      Verifies if the SudokuSolver finds the correct solution for a given row of data.
-      """
+    """
+    Verifies if the SudokuSolver finds the correct solution for a given row of data.
+    """
 
-      from src.solver.backtraking import SudokuSolver
+    from src.solver.backtraking import SudokuSolver
 
-      puzzle_str = row_data['Sudoku']
-      expected_solution_str = row_data['solution']
+    puzzle_str = row_data['Sudoku']
+    expected_solution_str = row_data['solution']
 
-      solver = SudokuSolver(puzzle_str)
+    solver = SudokuSolver(puzzle_str)
 
-      if solver.solve():
+    if solver.solve():
 
     # Convert the solved grid back to a single string for comparison
         found_solution_str = solver.get_solution()[1]
@@ -167,15 +167,15 @@ def verify_sudoku_solution(row_data: pd.Series):
         is_correct = (found_solution_str == expected_solution_str)
 
         return (
-        is_correct,
-        solver.search_nodes,
-        solver.propagation_assignments,
-        solver.max_memory_nodes
+            is_correct,
+            solver.search_nodes,
+            solver.propagation_assignments,
+            solver.max_memory_nodes
         )
-      else:
-          return (
-    False,
-    solver.search_nodes,
-    solver.propagation_assignments,
-    solver.max_memory_nodes
-)
+    else:
+        return (
+            False,
+            solver.search_nodes,
+            solver.propagation_assignments,
+            solver.max_memory_nodes
+        )
